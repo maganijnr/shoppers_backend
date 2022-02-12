@@ -8,6 +8,7 @@ async function connectDb(){
       console.log(colors.green.underline('DB connected successfully'))
    } catch (error) {
       console.log(colors.red.bold('Unable to connect to mongo db'))
+      console.log(error)
    }
 }
 
