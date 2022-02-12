@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
+import User from '../models/user.model.js'
 
+//Generate user token
 function generateToken(id, email, isAdmin) {
    return jwt.sign({
       id: id,
@@ -8,34 +10,37 @@ function generateToken(id, email, isAdmin) {
    },  process.env.SECRET_KEY, {expiresIn: '3d'})
 }
 
-async function verifyToken(req, res, next) {
-   const authHeader = req.headers.authorization
+//Protect some restricted routes
+async function protect(req, res, next) {
+   let token 
 
-   if(authHeader){
-      const token = authHeader.split("")[1]
-
-      jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
-         if(err) return res.status(403).json({msg:"Token not valid"})
-
-         res.user = user
-
+   if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')){
+      try {
+         token = req.headers.authorization.split(' ')[1]
+         const decodedToken = jwt.verify(token, process.env.SECRET_KEY)
+         req.user = await User.findById(decodedToken.id).select("-password")
          next()
-      })
+      } catch (error) {
+         res.status(401).json({msg: 'Token not found'})
+      }
+   } 
+
+   if(!token){
+      return res.status(401).json({msg: 'Token not found'})
    }
 }
 
-async function verifyAdmin(req, res, next) {
-   verifyToken(req, res, ()=>{
-      if(req.user.id === req.params.id || req.user.isAdmin){
-         next()
-      } else {
-         res.status(403).json({msg:"You are not authorized"})
-      }
-   })
+//Protect admin routes
+async function admin(req, res, next) {
+   if(req.user && req.user.isAdmin){
+      next()
+   } else{
+      res.status(401).json({msg:"Not authorized"})
+   }
 }
 
 export {
    generateToken,
-   verifyToken,
-   verifyAdmin
+   protect,
+   admin
 }

@@ -7,19 +7,26 @@ const ReviewSchema = mongoose.Schema({
    review: {type: String, required: true}
 })
 
+
 const ProductSchema = mongoose.Schema({
    user: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true, 
       ref:"User"
    },
    name:{
       type: String, 
       required: true
    },
+   image:{
+      type: String, 
+      required: true
+   },
    price:{
       type: Number, 
       required: true
+   },
+   size:{
+      type: Array, 
    },
    countInStock:{
       type: Number, 
@@ -40,13 +47,11 @@ const ProductSchema = mongoose.Schema({
       type: String, 
       required: true
    },
-   category:{
-      type: String, 
-      required: true
+   categories:{
+      type: Array
    },
    color:{
-      type: String, 
-      required: true
+      type: Array
    }
 })
 
